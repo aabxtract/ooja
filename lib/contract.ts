@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  openContractCall,
-  type ContractCallRegularOptions,
-} from "@stacks/connect";
+import type { ContractCallRegularOptions } from "@stacks/connect";
 import { uintCV } from "@stacks/transactions";
 import type { StacksNetwork } from "@stacks/network";
 import {
@@ -47,6 +44,9 @@ function getNetwork(): StacksNetwork {
 async function runContractCall(
   opts: Omit<ContractCallRegularOptions, "network" | "appDetails">
 ) {
+  // Dynamically import stacks-connect so it is only loaded
+  // in the browser, avoiding issues during Next.js prerender.
+  const { openContractCall } = await import("@stacks/connect");
   const network = getNetwork();
 
   return openContractCall({
