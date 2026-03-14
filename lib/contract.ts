@@ -4,11 +4,7 @@ import {
   openContractCall,
   type ContractCallRegularOptions,
 } from "@stacks/connect";
-import {
-  uintCV,
-  callReadOnlyFunction,
-  type ClarityValue,
-} from "@stacks/transactions";
+import { uintCV } from "@stacks/transactions";
 import type { StacksNetwork } from "@stacks/network";
 import {
   NETWORK,
@@ -119,20 +115,9 @@ export async function cancelBet(betId: BetId) {
 }
 
 export async function getBet(_betId: BetId): Promise<Bet | null> {
-  const network = getNetwork();
-
-  // NOTE: This is a placeholder until the Clarity struct is finalized.
-  // It just performs the read-only call and logs the raw result.
-  const result: ClarityValue = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CONTRACT_NAME,
-    functionName: "get-bet",
-    functionArgs: [uintCV(_betId)],
-    network,
-    senderAddress: CONTRACT_ADDRESS,
+  console.warn("getBet is not yet implemented for this stacks.js version", {
+    betId: _betId,
   });
-
-  console.log("Raw get-bet result:", result);
   return null;
 }
 
