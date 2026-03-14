@@ -1,50 +1,24 @@
 "use client";
 
-import { AppConfig, UserSession, showConnect } from "@stacks/connect";
-import type { StacksNetwork } from "@stacks/network";
-import { APP_NAME, APP_ICON } from "@/constants";
+import { connect, disconnect, isConnected } from "@stacks/connect";
 
-const appConfig = new AppConfig(["store_write", "publish_data"]);
+// In the modern @stacks/connect API, `connect()` opens the wallet
+// and returns addresses; we just need to trigger it from the button.
 
-const userSession = new UserSession({ appConfig });
+export async function connectWallet() {
+  const result = await connect({
+    forceWalletSelect: true,
+    persistWalletSelect: true,
+    enableLocalStorage: true,
+  });
+  return result;
+}
 
-export function getUserSession() {
-  return userSession;
+export function disconnectWallet() {
+  return disconnect();
 }
 
 export function isUserSignedIn() {
-  return userSession.isUserSignedIn();
-}
-
-export function isSignInPending() {
-  return userSession.isSignInPending();
-}
-
-export function getUserData() {
-  if (!isUserSignedIn()) return null;
-  return userSession.loadUserData();
-}
-
-export function connectWallet(network: StacksNetwork) {
-  return new Promise<void>((resolve, reject) => {
-    showConnect({
-      userSession,
-      network,
-      appDetails: {
-        name: APP_NAME,
-        icon: APP_ICON,
-      },
-      onFinish: () => {
-        resolve();
-      },
-      onCancel: () => {
-        reject(new Error("User cancelled wallet connection"));
-      },
-    });
-  });
-}
-
-export function disconnectWallet(redirectTo: string = "/") {
-  userSession.signUserOut(redirectTo);
+  return isConnected();
 }
 

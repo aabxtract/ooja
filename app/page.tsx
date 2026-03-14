@@ -4,19 +4,16 @@ import Link from "next/link";
 import {
   connectWallet,
   disconnectWallet,
-  getUserData,
   isUserSignedIn,
 } from "@/lib/wallet";
-import { NETWORK } from "@/constants";
 import { useState } from "react";
 
 export default function Home() {
   const [connected, setConnected] = useState(isUserSignedIn());
-  const userData = getUserData();
 
   const handleConnect = async () => {
     try {
-      await connectWallet(NETWORK);
+      await connectWallet();
       setConnected(true);
     } catch (e) {
       console.error(e);
@@ -27,10 +24,6 @@ export default function Home() {
     disconnectWallet();
     setConnected(false);
   };
-
-  const address =
-    (userData as any)?.profile?.stxAddress?.mainnet ??
-    (userData as any)?.profile?.stxAddress?.testnet;
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-50 flex flex-col items-center justify-center">
@@ -57,12 +50,6 @@ export default function Home() {
             </button>
           )}
         </div>
-
-        {connected && address && (
-          <p className="text-sm text-slate-400">
-            Connected as <span className="font-mono break-all">{address}</span>
-          </p>
-        )}
 
         <div className="flex justify-center gap-4 mt-4">
           <Link href="/create" className="text-emerald-400 hover:underline">
