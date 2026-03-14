@@ -1,5 +1,3 @@
-import { StacksMainnet, StacksTestnet } from "@stacks/network";
-
 export const CONTRACT_NAME = "stx-price-bet";
 
 export const CONTRACT_ADDRESS =
@@ -15,10 +13,12 @@ export const STACKS_API_URL =
     ? "https://api.hiro.so"
     : "https://api.testnet.hiro.so");
 
-export const NETWORK =
-  STACKS_NETWORK_ENV === "mainnet"
-    ? new StacksMainnet()
-    : new StacksTestnet({ url: STACKS_API_URL });
+// Minimal network object compatible with stacks.js clients.
+// We only care about the core API URL, which is enough for
+// openContractCall and read-only calls.
+export const NETWORK: any = {
+  coreApiUrl: STACKS_API_URL,
+};
 
 export const APP_NAME = "ooja";
 export const APP_ICON = "/icon.png";
