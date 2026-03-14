@@ -12,7 +12,7 @@ import {
   CONTRACT_NAME,
   ERROR_MESSAGES,
 } from "@/constants";
-import { getUserSession, isUserSignedIn } from "@/lib/wallet";
+import { isUserSignedIn } from "@/lib/wallet";
 
 export type BetId = bigint;
 
