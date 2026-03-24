@@ -16,6 +16,7 @@ export const STACKS_API_URL =
 // Minimal network object compatible with stacks.js clients.
 // We only care about the core API URL, which is enough for
 // openContractCall and read-only calls.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const NETWORK: any = {
   coreApiUrl: STACKS_API_URL,
 };
