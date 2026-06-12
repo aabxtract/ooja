@@ -1,0 +1,263 @@
+import { createHash, randomBytes } from "crypto";
+import { ObjectId } from "mongodb";
+import {
+  publicKeyFromSignatureRsv,
+  publicKeyFromSignatureVrs,
+  publicKeyToAddress,
+  validateStacksAddress,
+} from "@stacks/transactions";
+import { ApiError } from "./http";
+import { ensureBackendIndexes, getCollections } from "./mongodb";
+
+const SESSION_DAYS = 7;
+const NONCE_MINUTES = 10;
+
+export function normalizeWalletAddress(walletAddress: string) {
+  return walletAddress.trim().toUpperCase();
+}
+
+export function assertWalletAddress(value: unknown) {
+  if (typeof value !== "string") {
+    throw new ApiError(400, "walletAddress must be a string.");
+  }
+
+  const walletAddress = normalizeWalletAddress(value);
+
+  if (!validateStacksAddress(walletAddress)) {
+    throw new ApiError(400, "walletAddress must be a valid Stacks address.");
+  }
+
+  return walletAddress;
+}
+
+export function hashToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+export function createAuthMessage(walletAddress: string, nonce: string) {
+  return [
+    "Sign in to Ooja",
+    "",
+    `Wallet: ${walletAddress}`,
+    `Nonce: ${nonce}`,
+    "This signature only authenticates your wallet for Ooja off-chain APIs.",
+  ].join("\n");
+}
+
+export async function createWalletNonce(walletAddress: string) {
+  await ensureBackendIndexes();
+  const collections = await getCollections();
+  const nonce = randomBytes(24).toString("hex");
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + NONCE_MINUTES * 60 * 1000);
+  const message = createAuthMessage(walletAddress, nonce);
+
+  await collections.authNonces.insertOne({
+    walletAddress,
+    nonce,
+    message,
+    expiresAt,
+    createdAt: now,
+  });
+
+  return { nonce, message, expiresAt };
+}
+
+export async function verifyWalletNonce(args: {
+  walletAddress: string;
+  message: string;
+  signature: string;
+  publicKey?: string;
+}) {
+  await ensureBackendIndexes();
+  const collections = await getCollections();
+  const now = new Date();
+  const nonce = extractNonce(args.message);
+
+  const authNonce = await collections.authNonces.findOne({
+    walletAddress: args.walletAddress,
+    nonce,
+    message: args.message,
+    usedAt: { $exists: false },
+    expiresAt: { $gt: now },
+  });
+
+  if (!authNonce) {
+    throw new ApiError(401, "Auth challenge is invalid, expired, or already used.");
+  }
+
+  if (!verifyStacksMessageSignature(args)) {
+    throw new ApiError(401, "Wallet signature could not be verified.");
+  }
+
+  await collections.authNonces.updateOne(
+    { _id: authNonce._id },
+    { $set: { usedAt: now } }
+  );
+
+  return createSession(args.walletAddress);
+}
+
+export async function createSession(walletAddress: string) {
+  const collections = await getCollections();
+  const token = randomBytes(32).toString("hex");
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_DAYS * 24 * 60 * 60 * 1000);
+
+  await collections.userSessions.insertOne({
+    walletAddress,
+    tokenHash: hashToken(token),
+    expiresAt,
+    createdAt: now,
+  });
+
+  return { token, walletAddress, expiresAt };
+}
+
+export async function requireSession(request: Request) {
+  await ensureBackendIndexes();
+  const token = getBearerToken(request);
+
+  if (!token) {
+    throw new ApiError(401, "Authorization bearer token is required.");
+  }
+
+  const collections = await getCollections();
+  const session = await collections.userSessions.findOne({
+    tokenHash: hashToken(token),
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!session) {
+    throw new ApiError(401, "Session is invalid or expired.");
+  }
+
+  return session;
+}
+
+export function requireAdmin(request: Request) {
+  const configuredToken = process.env.OOJA_ADMIN_TOKEN;
+
+  if (!configuredToken) {
+    throw new ApiError(500, "OOJA_ADMIN_TOKEN is required for admin routes.");
+  }
+
+  const providedToken = request.headers.get("x-admin-token");
+
+  if (!providedToken || providedToken !== configuredToken) {
+    throw new ApiError(403, "Admin token is invalid or missing.");
+  }
+}
+
+export async function requireWalletOwnerOrAdmin(
+  request: Request,
+  walletAddress: string
+) {
+  const adminToken = request.headers.get("x-admin-token");
+
+  if (adminToken && process.env.OOJA_ADMIN_TOKEN && adminToken === process.env.OOJA_ADMIN_TOKEN) {
+    return { walletAddress, admin: true };
+  }
+
+  const session = await requireSession(request);
+
+  if (session.walletAddress !== walletAddress) {
+    throw new ApiError(403, "You can only access your own wallet data.");
+  }
+
+  return { walletAddress: session.walletAddress, admin: false };
+}
+
+export function objectIdFromParam(id: string) {
+  if (!ObjectId.isValid(id)) {
+    throw new ApiError(400, "id must be a valid MongoDB ObjectId.");
+  }
+
+  return new ObjectId(id);
+}
+
+function getBearerToken(request: Request) {
+  const auth = request.headers.get("authorization");
+  const [scheme, token] = auth?.split(" ") ?? [];
+
+  if (scheme?.toLowerCase() !== "bearer" || !token) return null;
+  return token.trim();
+}
+
+function extractNonce(message: string) {
+  const match = message.match(/^Nonce: ([a-f0-9]{48})$/im);
+
+  if (!match) {
+    throw new ApiError(400, "message does not contain a valid nonce.");
+  }
+
+  return match[1];
+}
+
+function verifyStacksMessageSignature(args: {
+  walletAddress: string;
+  message: string;
+  signature: string;
+  publicKey?: string;
+}) {
+  const signature = stripHexPrefix(args.signature);
+  const publicKey = args.publicKey ? stripHexPrefix(args.publicKey) : undefined;
+
+  if (!/^[a-fA-F0-9]{130}$/.test(signature)) return false;
+  if (publicKey && !/^[a-fA-F0-9]{66,130}$/.test(publicKey)) return false;
+
+  const network = args.walletAddress.startsWith("ST") ? "testnet" : "mainnet";
+
+  if (publicKey) {
+    try {
+      if (publicKeyToAddress(publicKey, network) !== args.walletAddress) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  return messageHashCandidates(args.message).some((messageHash) => {
+    for (const recover of [publicKeyFromSignatureRsv, publicKeyFromSignatureVrs]) {
+      try {
+        const recoveredPublicKey = recover(messageHash, signature);
+        const recoveredAddress = publicKeyToAddress(recoveredPublicKey, network);
+
+        if (recoveredAddress === args.walletAddress) {
+          return true;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return false;
+  });
+}
+
+function messageHashCandidates(message: string) {
+  const bytes = Buffer.from(message, "utf8");
+  const prefixed = Buffer.from(
+    `\u0018Stacks Signed Message:\n${bytes.length}${message}`,
+    "utf8"
+  );
+  const plainPrefixed = Buffer.from(
+    `Stacks Signed Message:\n${bytes.length}${message}`,
+    "utf8"
+  );
+
+  return [
+    sha256Hex(bytes),
+    sha256Hex(prefixed),
+    sha256Hex(plainPrefixed),
+  ];
+}
+
+function sha256Hex(value: Buffer) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function stripHexPrefix(value: string) {
+  return value.startsWith("0x") || value.startsWith("0X") ? value.slice(2) : value;
+}
