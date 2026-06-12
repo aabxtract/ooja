@@ -75,26 +75,25 @@ export async function verifyWalletNonce(args: {
   const now = new Date();
   const nonce = extractNonce(args.message);
 
-  const authNonce = await collections.authNonces.findOne({
-    walletAddress: args.walletAddress,
-    nonce,
-    message: args.message,
-    usedAt: { $exists: false },
-    expiresAt: { $gt: now },
-  });
-
-  if (!authNonce) {
-    throw new ApiError(401, "Auth challenge is invalid, expired, or already used.");
-  }
-
   if (!verifyStacksMessageSignature(args)) {
     throw new ApiError(401, "Wallet signature could not be verified.");
   }
 
-  await collections.authNonces.updateOne(
-    { _id: authNonce._id },
-    { $set: { usedAt: now } }
+  const claimedNonce = await collections.authNonces.findOneAndUpdate(
+    {
+      walletAddress: args.walletAddress,
+      nonce,
+      message: args.message,
+      usedAt: { $exists: false },
+      expiresAt: { $gt: now },
+    },
+    { $set: { usedAt: now } },
+    { returnDocument: "after" }
   );
+
+  if (!claimedNonce) {
+    throw new ApiError(401, "Auth challenge is invalid, expired, or already used.");
+  }
 
   return createSession(args.walletAddress);
 }
