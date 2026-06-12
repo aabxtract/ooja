@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ooja-swart.vercel.app/"),
   title: "ooja | Stacks Prediction Markets",
   description:
     "A mock trading-market frontend for Stacks price and ecosystem outcomes.",

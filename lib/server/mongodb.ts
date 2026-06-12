@@ -1,4 +1,4 @@
-import { MongoClient, type Collection, type Db } from "mongodb";
+import { MongoClient, type Db } from "mongodb";
 import type {
   ActivityDocument,
   AuthNonceDocument,
@@ -69,5 +69,3 @@ async function createIndexes() {
     collections.userSessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
   ]);
 }
-
-export type BackendCollection<T> = Collection<T>;
