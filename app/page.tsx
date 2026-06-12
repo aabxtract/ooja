@@ -69,7 +69,7 @@ export default function Home() {
                  Predict the future of Stacks.
                </h1>
                <p className="text-xl text-[#A1A1AA] mb-8 font-medium leading-relaxed">
-                 Trade on the most pressing questions in the ecosystem. Back your beliefs with STX, and win when you're right. Simple, fast, and secure.
+                 Trade on the most pressing questions in the ecosystem. Back your beliefs with STX, and win when you&apos;re right. Simple, fast, and secure.
                </p>
                <button className="rounded-full bg-white px-8 py-3.5 text-base font-black text-black transition-transform hover:scale-105 flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                  Explore Markets <span className="text-[#FF8A00]">→</span>
@@ -192,4 +192,3 @@ export default function Home() {
     </main>
   );
 }
-
