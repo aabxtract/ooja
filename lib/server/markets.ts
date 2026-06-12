@@ -9,6 +9,14 @@ const MARKET_STATUSES: MarketStatus[] = [
   "resolved",
   "cancelled",
 ];
+const TERMINAL_MARKET_STATUSES: MarketStatus[] = ["resolved", "cancelled"];
+const ALLOWED_STATUS_TRANSITIONS: Record<MarketStatus, MarketStatus[]> = {
+  draft: ["draft", "open", "cancelled"],
+  open: ["open", "closed", "cancelled"],
+  closed: ["closed", "cancelled"],
+  resolved: ["resolved"],
+  cancelled: ["cancelled"],
+};
 
 export function parseMarketCreateBody(body: unknown, createdBy: string): MarketDocument {
   const input = asRecord(body);
@@ -68,6 +76,49 @@ export function buildMarketPatch(body: unknown) {
   }
 
   return patch;
+}
+
+export function validateMarketPatch(
+  market: MarketDocument,
+  patch: Partial<MarketDocument>,
+  options: { hasOrders: boolean }
+) {
+  const now = Date.now();
+  const nextStatus = patch.status ?? market.status;
+  const nextCloseAt = patch.closeAt ?? market.closeAt;
+
+  if (TERMINAL_MARKET_STATUSES.includes(market.status)) {
+    throw new ApiError(409, "Resolved or cancelled markets cannot be edited.");
+  }
+
+  if (patch.status === "resolved") {
+    throw new ApiError(400, "Use the market resolution endpoint to resolve a market.");
+  }
+
+  if (patch.status && !ALLOWED_STATUS_TRANSITIONS[market.status].includes(patch.status)) {
+    throw new ApiError(
+      409,
+      `Cannot change market status from ${market.status} to ${patch.status}.`
+    );
+  }
+
+  if (patch.outcomes !== undefined) {
+    if (market.status !== "draft") {
+      throw new ApiError(409, "Outcomes can only be edited while a market is draft.");
+    }
+
+    if (options.hasOrders) {
+      throw new ApiError(409, "Markets with orders cannot have their outcomes edited.");
+    }
+  }
+
+  if (patch.closeAt !== undefined && !["draft", "open"].includes(market.status)) {
+    throw new ApiError(409, "closeAt can only be edited while a market is draft or open.");
+  }
+
+  if (nextStatus === "open" && nextCloseAt.getTime() <= now) {
+    throw new ApiError(400, "Open markets must have a future closeAt date.");
+  }
 }
 
 export function buildMarketFilter(searchParams: URLSearchParams): Filter<MarketDocument> {
