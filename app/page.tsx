@@ -1,136 +1,195 @@
-import Link from "next/link";
-import { AppShell } from "@/components/AppShell";
-import { MarketCard } from "@/components/MarketCard";
-import { MiniChart } from "@/components/MiniChart";
-import { OrderTicket } from "@/components/OrderTicket";
-import { PositionTable } from "@/components/PositionTable";
-import { formatCurrency } from "@/components/format";
-import { accountSummary, markets, positions } from "@/mockData";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
-const featuredMarket = markets[0];
-const activeMarkets = markets.filter((market) => market.status !== "Settled");
-const totalVolume = markets.reduce((sum, market) => sum + market.volume24h, 0);
-const totalLiquidity = markets.reduce((sum, market) => sum + market.liquidity, 0);
+const predictionMarkets = [
+  {
+    id: "M-1029",
+    category: "Price",
+    question: "Will STX close above $2.50 by Friday?",
+    closes: "18h 24m",
+    pool: "12,430 STX",
+    above: 62,
+    below: 38,
+    image: "📈"
+  },
+  {
+    id: "M-1030",
+    category: "Price",
+    question: "Will STX reach $3.00 this month?",
+    closes: "12d 6h",
+    pool: "28,910 STX",
+    above: 44,
+    below: 56,
+    image: "🚀"
+  },
+  {
+    id: "M-1031",
+    category: "Ecosystem",
+    question: "Will Nakamoto release activate before EOY?",
+    closes: "30d 11h",
+    pool: "50,200 STX",
+    above: 85,
+    below: 15,
+    image: "⚡"
+  },
+  {
+    id: "M-1032",
+    category: "Price",
+    question: "Will STX stay below $2.20 in the next 24 hours?",
+    closes: "23h 11m",
+    pool: "9,805 STX",
+    above: 35,
+    below: 65,
+    image: "📉"
+  },
+];
 
 export default function Home() {
   return (
-    <AppShell>
-      <main>
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_360px] lg:px-8 lg:py-10">
-            <div className="min-w-0">
-              <div className="mb-5 flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
-                  Mock market live
-                </span>
-                <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-bold text-slate-500">
-                  Stacks prediction trading
-                </span>
-              </div>
-              <h1 className="max-w-4xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                Trade event outcomes with a clean market desk.
-              </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                ooja is a simple prediction-market frontend for Stacks price and
-                ecosystem events. Browse markets, stage mock UP or DOWN orders,
-                and review positions before the wallet and contract flow is
-                connected.
-              </p>
+    <main className="min-h-screen bg-[#09090B] text-white font-sans flex flex-col selection:bg-[#FF8A00] selection:text-black">
+      <Header isLoggedIn={false} />
 
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/markets"
-                  className="rounded-md bg-slate-950 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-emerald-700"
-                >
-                  Open market board
-                </Link>
-                <Link
-                  href="/create"
-                  className="rounded-md border border-slate-300 bg-white px-5 py-3 text-center text-sm font-black text-slate-800 transition hover:border-slate-400 hover:bg-slate-50"
-                >
-                  Create mock market
-                </Link>
-              </div>
+      {/* Main Content Layout */}
+      <div className="flex-1 max-w-[1440px] w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
+        
+        {/* Left Side: Feed / Markets */}
+        <div className="flex flex-col gap-10">
+          
+          {/* Welcome Banner */}
+          <section className="relative overflow-hidden rounded-3xl bg-[#18181B] border border-[#27272A] text-white p-10 sm:p-14 shadow-2xl">
+             <div className="absolute top-0 right-0 -mt-10 -mr-10 opacity-5 text-[250px] leading-none pointer-events-none mix-blend-overlay">
+               📈
+             </div>
+             <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF8A00]/10 rounded-full blur-[100px] pointer-events-none"></div>
+             <div className="relative z-10 max-w-2xl">
+               <span className="inline-block px-4 py-1.5 bg-[#FF8A00]/10 text-[#FF8A00] text-xs font-black tracking-widest rounded-full mb-6 uppercase border border-[#FF8A00]/20">
+                 The Premier STX Prediction Market
+               </span>
+               <h1 className="text-5xl sm:text-6xl font-black mb-6 leading-[1.1] tracking-tight">
+                 Predict the future of Stacks.
+               </h1>
+               <p className="text-xl text-[#A1A1AA] mb-8 font-medium leading-relaxed">
+                 Trade on the most pressing questions in the ecosystem. Back your beliefs with STX, and win when you're right. Simple, fast, and secure.
+               </p>
+               <button className="rounded-full bg-white px-8 py-3.5 text-base font-black text-black transition-transform hover:scale-105 flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                 Explore Markets <span className="text-[#FF8A00]">→</span>
+               </button>
+             </div>
+          </section>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                {[
-                  ["24h volume", formatCurrency(totalVolume, true)],
-                  ["Liquidity", formatCurrency(totalLiquidity, true)],
-                  ["Buying power", formatCurrency(accountSummary.buyingPower)],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-4"
-                  >
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                      {label}
-                    </p>
-                    <p className="mt-2 text-2xl font-black text-slate-950">
-                      {value}
-                    </p>
+          {/* Trending Markets Grid */}
+          <section id="markets">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-black tracking-tight text-white">Trending Markets</h2>
+              <div className="flex gap-2 p-1 bg-[#18181B] rounded-full border border-[#27272A]">
+                 <button className="px-5 py-1.5 rounded-full bg-[#27272A] text-sm font-bold text-white">All</button>
+                 <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Price</button>
+                 <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Ecosystem</button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {predictionMarkets.map((market) => (
+                <div key={market.id} className="flex flex-col bg-[#18181B] border border-[#27272A] rounded-3xl p-6 hover:border-[#FF8A00]/50 transition-all duration-300 cursor-pointer group shadow-lg">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="flex items-center gap-4">
+                      <div className="text-3xl bg-[#09090B] p-3 rounded-2xl border border-[#27272A] group-hover:border-[#FF8A00]/30 transition-colors">{market.image}</div>
+                      <div>
+                        <span className="text-[11px] font-black text-[#FF8A00] uppercase tracking-widest">{market.category}</span>
+                        <p className="text-[#A1A1AA] text-xs font-bold mt-1">Vol: {market.pool}</p>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
+                  
+                  <h3 className="text-xl font-black text-white mb-6 leading-snug group-hover:text-[#FF8A00] transition-colors">
+                    {market.question}
+                  </h3>
+                  
+                  <div className="mt-auto grid grid-cols-2 gap-4">
+                    <button className="relative overflow-hidden rounded-2xl bg-[#09090B] border border-[#27272A] p-4 text-left hover:border-[#22C55E] hover:bg-[#18181B] transition-all group/btn">
+                      <span className="block text-xs font-bold text-[#A1A1AA] mb-1 uppercase tracking-wider">Above</span>
+                      <span className="block text-2xl font-black text-[#22C55E]">{market.above}¢</span>
+                    </button>
+                    <button className="relative overflow-hidden rounded-2xl bg-[#09090B] border border-[#27272A] p-4 text-left hover:border-[#EF4444] hover:bg-[#18181B] transition-all group/btn">
+                      <span className="block text-xs font-bold text-[#A1A1AA] mb-1 uppercase tracking-wider">Below</span>
+                      <span className="block text-2xl font-black text-[#EF4444]">{market.below}¢</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
+          </section>
 
-            <OrderTicket market={featuredMarket} />
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-500">
-                Active markets
+          {/* Education / How it works */}
+          <section className="bg-[#18181B] border border-[#27272A] rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF8A00]/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            <div className="relative z-10">
+              <h2 className="text-2xl font-black text-white mb-3">New to Prediction Markets?</h2>
+              <p className="text-base text-[#A1A1AA] max-w-xl leading-relaxed font-medium">
+                Learn how to read odds, place trades, and manage your portfolio. 
+                Prediction markets let you capitalize on your knowledge.
               </p>
-              <h2 className="mt-2 text-2xl font-black text-slate-950">
-                Top trading opportunities
-              </h2>
             </div>
-            <Link
-              href="/markets"
-              className="text-sm font-black text-emerald-700 hover:text-emerald-900"
-            >
-              View all markets
-            </Link>
-          </div>
+            <button className="shrink-0 relative z-10 rounded-full border-2 border-[#27272A] bg-[#09090B] text-white px-8 py-3.5 text-sm font-black transition-all hover:border-[#FF8A00] hover:text-[#FF8A00]">
+              Read the Guide
+            </button>
+          </section>
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            {activeMarkets.slice(0, 3).map((market) => (
-              <MarketCard key={market.id} market={market} />
-            ))}
-          </div>
-        </section>
+        </div>
 
-        <section className="mx-auto grid max-w-7xl gap-4 px-4 pb-10 sm:px-6 lg:grid-cols-[1fr_360px] lg:px-8">
-          <PositionTable positions={positions.slice(0, 3)} />
-
-          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-500">
-              Market pulse
-            </p>
-            <h2 className="mt-2 text-lg font-black text-slate-950">
-              STX sentiment index
-            </h2>
-            <div className="mt-5 h-44 rounded-lg border border-slate-100 bg-slate-50 p-3">
-              <MiniChart
-                values={[42, 46, 51, 49, 55, 58, 61, 64, 62, 67, 69, 72]}
-                tone="blue"
-              />
-            </div>
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-md bg-emerald-50 p-3">
-                <p className="text-xs font-bold text-emerald-700">UP demand</p>
-                <p className="mt-1 text-xl font-black text-emerald-900">68%</p>
-              </div>
-              <div className="rounded-md bg-rose-50 p-3">
-                <p className="text-xs font-bold text-rose-700">DOWN demand</p>
-                <p className="mt-1 text-xl font-black text-rose-900">32%</p>
-              </div>
+        {/* Right Side: Order Slip / Activity */}
+        <aside className="hidden lg:flex flex-col gap-6">
+          
+          {/* Order Slip Panel */}
+          <div className="bg-[#18181B] border border-[#27272A] rounded-3xl p-6 sticky top-[100px] shadow-xl">
+            <h3 className="text-xl font-black text-white mb-6 flex items-center justify-between">
+              Order Slip
+              <span className="text-xs bg-[#27272A] text-white px-2.5 py-1 rounded-full font-bold">0</span>
+            </h3>
+            
+            <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-[#27272A] rounded-2xl bg-[#09090B]">
+              <div className="text-4xl mb-4 grayscale opacity-20">🎫</div>
+              <p className="text-base font-bold text-white">Your slip is empty</p>
+              <p className="text-sm text-[#A1A1AA] mt-2 max-w-[220px] font-medium leading-relaxed">
+                Click an outcome on any market to start trading.
+              </p>
             </div>
           </div>
-        </section>
-      </main>
-    </AppShell>
+          
+          {/* Recent Activity Feed */}
+          <div className="bg-[#18181B] border border-[#27272A] rounded-3xl p-6 shadow-xl">
+             <h3 className="text-sm font-black text-[#A1A1AA] mb-5 uppercase tracking-widest">Live Activity</h3>
+             <div className="space-y-4">
+               {[
+                 { user: "SP3F...8K9L", action: "bought Above", amount: "500", market: "STX $2.50", time: "1m ago" },
+                 { user: "SP1A...4M2P", action: "bought Below", amount: "1,200", market: "STX $3.00", time: "3m ago" },
+                 { user: "SP8X...9Y7Z", action: "bought Above", amount: "250", market: "Nakamoto", time: "5m ago" },
+               ].map((act, i) => (
+                 <div key={i} className="flex gap-4 text-sm border-b border-[#27272A] pb-4 last:border-0 last:pb-0">
+                   <div className="h-8 w-8 rounded-full bg-[#09090B] border border-[#27272A] flex items-center justify-center shrink-0 text-base">
+                     👤
+                   </div>
+                   <div className="flex-1">
+                     <p className="text-white font-medium">
+                       <span className="font-bold text-[#FF8A00]">{act.user}</span> {act.action}
+                     </p>
+                     <div className="flex justify-between items-center mt-1">
+                       <p className="text-[#A1A1AA] font-bold text-xs">
+                         {act.amount} STX • {act.market}
+                       </p>
+                       <span className="text-[#71717A] text-xs font-bold">{act.time}</span>
+                     </div>
+                   </div>
+                 </div>
+               ))}
+             </div>
+          </div>
+        </aside>
+
+      </div>
+      
+      <Footer />
+    </main>
   );
 }
+
