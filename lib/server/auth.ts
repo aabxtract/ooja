@@ -6,6 +6,7 @@ import {
   publicKeyToAddress,
   validateStacksAddress,
 } from "@stacks/transactions";
+import { hashMessage } from "@stacks/encryption";
 import { ApiError } from "./http";
 import { ensureBackendIndexes, getCollections } from "./mongodb";
 
@@ -206,7 +207,7 @@ function verifyStacksMessageSignature(args: {
   if (!/^[a-fA-F0-9]{130}$/.test(signature)) return false;
   if (publicKey && !/^[a-fA-F0-9]{66,130}$/.test(publicKey)) return false;
 
-  const network = args.walletAddress.startsWith("ST") ? "testnet" : "mainnet";
+  const network = getStacksNetworkName(args.walletAddress);
 
   if (publicKey) {
     try {
@@ -218,44 +219,28 @@ function verifyStacksMessageSignature(args: {
     }
   }
 
-  return messageHashCandidates(args.message).some((messageHash) => {
-    for (const recover of [publicKeyFromSignatureRsv, publicKeyFromSignatureVrs]) {
-      try {
-        const recoveredPublicKey = recover(messageHash, signature);
-        const recoveredAddress = publicKeyToAddress(recoveredPublicKey, network);
+  const messageHash = Buffer.from(hashMessage(args.message)).toString("hex");
 
-        if (recoveredAddress === args.walletAddress) {
-          return true;
-        }
-      } catch {
-        continue;
+  for (const recover of [publicKeyFromSignatureRsv, publicKeyFromSignatureVrs]) {
+    try {
+      const recoveredPublicKey = recover(messageHash, signature);
+      const recoveredAddress = publicKeyToAddress(recoveredPublicKey, network);
+
+      if (recoveredAddress === args.walletAddress) {
+        return true;
       }
+    } catch {
+      continue;
     }
+  }
 
-    return false;
-  });
+  return false;
 }
 
-function messageHashCandidates(message: string) {
-  const bytes = Buffer.from(message, "utf8");
-  const prefixed = Buffer.from(
-    `\u0018Stacks Signed Message:\n${bytes.length}${message}`,
-    "utf8"
-  );
-  const plainPrefixed = Buffer.from(
-    `Stacks Signed Message:\n${bytes.length}${message}`,
-    "utf8"
-  );
-
-  return [
-    sha256Hex(bytes),
-    sha256Hex(prefixed),
-    sha256Hex(plainPrefixed),
-  ];
-}
-
-function sha256Hex(value: Buffer) {
-  return createHash("sha256").update(value).digest("hex");
+function getStacksNetworkName(walletAddress: string) {
+  return walletAddress.startsWith("ST") || walletAddress.startsWith("SN")
+    ? "testnet"
+    : "mainnet";
 }
 
 function stripHexPrefix(value: string) {
