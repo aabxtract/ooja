@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Clarinet config and settings
+*.toml
+*.yaml
+
+# Local scratch and key derivation scripts
+scratch/
+
+# Test directories and files
+tests/
+**/tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
