@@ -1,53 +1,17 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
-const predictionMarkets = [
-  {
-    id: "M-1029",
-    category: "Price",
-    question: "Will STX close above $2.50 by Friday?",
-    closes: "18h 24m",
-    pool: "12,430 STX",
-    above: 62,
-    below: 38,
-    image: "📈"
-  },
-  {
-    id: "M-1030",
-    category: "Price",
-    question: "Will STX reach $3.00 this month?",
-    closes: "12d 6h",
-    pool: "28,910 STX",
-    above: 44,
-    below: 56,
-    image: "🚀"
-  },
-  {
-    id: "M-1031",
-    category: "Ecosystem",
-    question: "Will Nakamoto release activate before EOY?",
-    closes: "30d 11h",
-    pool: "50,200 STX",
-    above: 85,
-    below: 15,
-    image: "⚡"
-  },
-  {
-    id: "M-1032",
-    category: "Price",
-    question: "Will STX stay below $2.20 in the next 24 hours?",
-    closes: "23h 11m",
-    pool: "9,805 STX",
-    above: 35,
-    below: 65,
-    image: "📉"
-  },
-];
+import { Toaster } from "react-hot-toast";
+import { OrderProvider } from "./context/OrderContext";
+import MarketFeed from "./components/MarketFeed";
+import OrderSlip from "./components/OrderSlip";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#09090B] text-white font-sans flex flex-col selection:bg-[#FF8A00] selection:text-black">
-      <Header isLoggedIn={false} />
+    <OrderProvider>
+      <main className="min-h-screen bg-[#09090B] text-white font-sans flex flex-col selection:bg-[#FF8A00] selection:text-black">
+        <Header isLoggedIn={false} />
+        <Toaster position="bottom-right" />
 
       {/* Main Content Layout */}
       <div className="flex-1 max-w-[1440px] w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
@@ -77,48 +41,7 @@ export default function Home() {
              </div>
           </section>
 
-          {/* Trending Markets Grid */}
-          <section id="markets">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-black tracking-tight text-white">Trending Markets</h2>
-              <div className="flex gap-2 p-1 bg-[#18181B] rounded-full border border-[#27272A]">
-                 <button className="px-5 py-1.5 rounded-full bg-[#27272A] text-sm font-bold text-white">All</button>
-                 <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Price</button>
-                 <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Ecosystem</button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {predictionMarkets.map((market) => (
-                <div key={market.id} className="flex flex-col bg-[#18181B] border border-[#27272A] rounded-3xl p-6 hover:border-[#FF8A00]/50 transition-all duration-300 cursor-pointer group shadow-lg">
-                  <div className="flex items-start justify-between mb-5">
-                    <div className="flex items-center gap-4">
-                      <div className="text-3xl bg-[#09090B] p-3 rounded-2xl border border-[#27272A] group-hover:border-[#FF8A00]/30 transition-colors">{market.image}</div>
-                      <div>
-                        <span className="text-[11px] font-black text-[#FF8A00] uppercase tracking-widest">{market.category}</span>
-                        <p className="text-[#A1A1AA] text-xs font-bold mt-1">Vol: {market.pool}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-xl font-black text-white mb-6 leading-snug group-hover:text-[#FF8A00] transition-colors">
-                    {market.question}
-                  </h3>
-                  
-                  <div className="mt-auto grid grid-cols-2 gap-4">
-                    <button className="relative overflow-hidden rounded-2xl bg-[#09090B] border border-[#27272A] p-4 text-left hover:border-[#22C55E] hover:bg-[#18181B] transition-all group/btn">
-                      <span className="block text-xs font-bold text-[#A1A1AA] mb-1 uppercase tracking-wider">Above</span>
-                      <span className="block text-2xl font-black text-[#22C55E]">{market.above}¢</span>
-                    </button>
-                    <button className="relative overflow-hidden rounded-2xl bg-[#09090B] border border-[#27272A] p-4 text-left hover:border-[#EF4444] hover:bg-[#18181B] transition-all group/btn">
-                      <span className="block text-xs font-bold text-[#A1A1AA] mb-1 uppercase tracking-wider">Below</span>
-                      <span className="block text-2xl font-black text-[#EF4444]">{market.below}¢</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <MarketFeed />
 
           {/* Education / How it works */}
           <section className="bg-[#18181B] border border-[#27272A] rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-lg relative overflow-hidden">
@@ -140,21 +63,7 @@ export default function Home() {
         {/* Right Side: Order Slip / Activity */}
         <aside className="hidden lg:flex flex-col gap-6">
           
-          {/* Order Slip Panel */}
-          <div className="bg-[#18181B] border border-[#27272A] rounded-3xl p-6 sticky top-[100px] shadow-xl">
-            <h3 className="text-xl font-black text-white mb-6 flex items-center justify-between">
-              Order Slip
-              <span className="text-xs bg-[#27272A] text-white px-2.5 py-1 rounded-full font-bold">0</span>
-            </h3>
-            
-            <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-[#27272A] rounded-2xl bg-[#09090B]">
-              <div className="text-4xl mb-4 grayscale opacity-20">🎫</div>
-              <p className="text-base font-bold text-white">Your slip is empty</p>
-              <p className="text-sm text-[#A1A1AA] mt-2 max-w-[220px] font-medium leading-relaxed">
-                Click an outcome on any market to start trading.
-              </p>
-            </div>
-          </div>
+          <OrderSlip />
           
           {/* Recent Activity Feed */}
           <div className="bg-[#18181B] border border-[#27272A] rounded-3xl p-6 shadow-xl">
@@ -188,7 +97,7 @@ export default function Home() {
 
       </div>
       
-      <Footer />
-    </main>
+      </main>
+    </OrderProvider>
   );
 }
