@@ -1,0 +1,44 @@
+{
+  "name": "ooja-sdk",
+  "version": "0.1.0",
+  "description": "Utility helpers for the Ooja prediction market platform on Stacks",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aabxtract/ooja.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/aabxtract/ooja/tree/master/packages/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/aabxtract/ooja/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
+  },
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "prediction-market",
+    "ooja",
+    "stx"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5"
+  }
+}
