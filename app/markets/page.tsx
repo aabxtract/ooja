@@ -9,12 +9,12 @@ export default function MarketsPage() {
         <h1 className="text-4xl font-black mb-8 text-white">Explore Markets</h1>
         
         {/* Categories / Filters */}
-        <div className="flex gap-4 mb-10 overflow-x-auto pb-2">
-          <button className="px-6 py-2 rounded-full bg-[#FF8A00] text-black font-bold whitespace-nowrap shadow-[0_0_15px_rgba(255,138,0,0.2)]">All</button>
-          <button className="px-6 py-2 rounded-full bg-[#18181B] border border-[#27272A] text-[#A1A1AA] hover:text-white font-bold transition-colors whitespace-nowrap">Crypto Prices</button>
-          <button className="px-6 py-2 rounded-full bg-[#18181B] border border-[#27272A] text-[#A1A1AA] hover:text-white font-bold transition-colors whitespace-nowrap">Stacks Ecosystem</button>
-          <button className="px-6 py-2 rounded-full bg-[#18181B] border border-[#27272A] text-[#A1A1AA] hover:text-white font-bold transition-colors whitespace-nowrap">DeFi</button>
-          <button className="px-6 py-2 rounded-full bg-[#18181B] border border-[#27272A] text-[#A1A1AA] hover:text-white font-bold transition-colors whitespace-nowrap">Pop Culture</button>
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 p-1 bg-[#18181B] rounded-full border border-[#27272A] w-fit">
+          <button className="px-5 py-1.5 rounded-full bg-[#27272A] text-sm font-bold text-white">All</button>
+          <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Crypto Prices</button>
+          <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Stacks Ecosystem</button>
+          <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">DeFi</button>
+          <button className="px-5 py-1.5 rounded-full text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Pop Culture</button>
         </div>
 
         {/* Markets Grid */}
