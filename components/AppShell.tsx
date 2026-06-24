@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  connectWallet,
-  disconnectWallet,
-} from "@/lib/wallet";
+import { disconnectWallet } from "@/lib/wallet";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -21,15 +18,6 @@ const navItems = [
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const [connected, setConnected] = useState(false);
-
-  const handleConnect = async () => {
-    try {
-      await connectWallet();
-      setConnected(true);
-    } catch (error) {
-      console.error("Wallet connection failed", error);
-    }
-  };
 
   const handleDisconnect = async () => {
     try {
@@ -85,12 +73,12 @@ export function AppShell({ children }: AppShellProps) {
                 SP2C...9QK4
               </button>
             ) : (
-              <button
-                onClick={handleConnect}
+              <Link
+                href="/auth"
                 className="rounded-full bg-[#312E81] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#7C3AED]"
               >
                 Connect
-              </button>
+              </Link>
             )}
           </div>
         </div>
