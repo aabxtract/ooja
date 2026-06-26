@@ -5,12 +5,6 @@
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
 }
 
-body {
-  min-height: 100vh;
-  background-color: #454445;
-  color: #FFFFFF;
-  font-family: var(--font-sans);
-}
 
 button,
 a,
