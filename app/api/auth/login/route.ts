@@ -1,20 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { authenticateUser } from "@/lib/server/auth";
+import { fail, ok, readJson, requireString } from "@/lib/server/http";
 
-export async function POST(req: NextRequest) {
+export const runtime = "nodejs";
+
+export async function POST(request: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = (await readJson(request)) as Record<string, unknown>;
+    const email = requireString(body.email, "email");
+    const password = requireString(body.password, "password");
 
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
-    }
+    const session = await authenticateUser({ email, password });
 
-    // TODO: Verify credentials against database
-    // For now, return success
-    return NextResponse.json({
+    return ok({
       message: "Login successful",
-      user: { email },
+      token: session.token,
+      walletAddress: session.walletAddress,
+      expiresAt: session.expiresAt.toISOString(),
     });
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (error) {
+    return fail(error);
   }
 }
