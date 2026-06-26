@@ -1,4 +1,4 @@
-import Link from "next/link";
+
 import Image from "next/image";
 
 export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
@@ -14,16 +14,16 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
           <Link href="/activity" className="hover:text-white transition-colors">Activity</Link>
         </nav>
       </div>
-      
+
       <div className="flex-1 max-w-xl mx-8 hidden lg:block">
         <div className="relative group">
-          <input 
-            type="text" 
-            placeholder="Search markets, events, or categories..." 
+          <input
+            type="text"
+            placeholder="Search markets, events, or categories..."
             className="w-full bg-[#18181B] border border-[#27272A] focus:border-[#FF8A00] text-white text-sm font-medium rounded-full py-2.5 px-5 pl-12 outline-none transition-all duration-300"
           />
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A1A1AA] text-lg">
-             🔍
+            🔍
           </span>
         </div>
       </div>
@@ -41,10 +41,10 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
           </div>
         ) : (
           <>
-            <button className="hidden sm:block text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Log In</button>
-            <button className="rounded-full bg-gradient-to-r from-[#FF8A00] to-[#FF6B00] px-6 py-2.5 text-sm font-black text-black transition-transform hover:scale-105 shadow-[0_0_15px_rgba(255,138,0,0.3)]">
+            <Link href="/auth" className="hidden sm:block text-sm font-bold text-[#A1A1AA] hover:text-white transition-colors">Log In</Link>
+            <Link href="/auth" className="rounded-full bg-gradient-to-r from-[#FF8A00] to-[#FF6B00] px-6 py-2.5 text-sm font-black text-black transition-transform hover:scale-105 shadow-[0_0_15px_rgba(255,138,0,0.3)]">
               Connect
-            </button>
+            </Link>
           </>
         )}
       </div>
