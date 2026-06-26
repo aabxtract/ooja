@@ -38,6 +38,9 @@ export default function AuthPage() {
         setMode("login");
         setError("");
       } else {
+        if (data.token) {
+          localStorage.setItem("ooja_token", data.token);
+        }
         window.location.href = "/";
       }
     } catch {
