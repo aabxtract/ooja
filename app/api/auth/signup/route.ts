@@ -1,24 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { createUser } from "@/lib/server/auth";
+import { fail, ok, readJson, requireString, optionalString } from "@/lib/server/http";
 
-export async function POST(req: NextRequest) {
+export const runtime = "nodejs";
+
+export async function POST(request: Request) {
   try {
-    const { email, password, name } = await req.json();
+    const body = (await readJson(request)) as Record<string, unknown>;
+    const email = requireString(body.email, "email");
+    const password = requireString(body.password, "password", { min: 6, max: 128 });
+    const name = optionalString(body.name, "name", { max: 100 });
 
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
-    }
+    const user = await createUser({ email, password, name });
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
-    }
-
-    // TODO: Store user in database (MongoDB)
-    // For now, return success
-    return NextResponse.json({
+    return ok({
       message: "Account created successfully",
-      user: { email, name },
+      user: { id: user.id, email: user.email, name: user.name },
     });
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (error) {
+    return fail(error);
   }
 }
