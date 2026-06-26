@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { ObjectId } from "mongodb";
 import {
   publicKeyFromSignatureRsv,
@@ -244,4 +244,75 @@ function getStacksNetworkName(walletAddress: string) {
 
 function stripHexPrefix(value: string) {
   return value.startsWith("0x") || value.startsWith("0X") ? value.slice(2) : value;
+}
+
+const SCRYPT_KEYLEN = 64;
+const SCRYPT_COST = 16384;
+const SCRYPT_BLOCK_SIZE = 8;
+const SCRYPT_PARALLELIZATION = 1;
+
+export function hashPassword(password: string): { hash: string; salt: string } {
+  const salt = randomBytes(16).toString("hex");
+  const derived = scryptSync(password, salt, SCRYPT_KEYLEN, {
+    N: SCRYPT_COST,
+    r: SCRYPT_BLOCK_SIZE,
+    p: SCRYPT_PARALLELIZATION,
+  });
+  return { hash: derived.toString("hex"), salt };
+}
+
+export function verifyPassword(password: string, storedHash: string, salt: string): boolean {
+  const derived = scryptSync(password, salt, SCRYPT_KEYLEN, {
+    N: SCRYPT_COST,
+    r: SCRYPT_BLOCK_SIZE,
+    p: SCRYPT_PARALLELIZATION,
+  });
+  const stored = Buffer.from(storedHash, "hex");
+  if (derived.length !== stored.length) return false;
+  return timingSafeEqual(derived, stored);
+}
+
+export async function createUser(args: {
+  email: string;
+  password: string;
+  name?: string;
+}) {
+  await ensureBackendIndexes();
+  const collections = await getCollections();
+
+  const existing = await collections.users.findOne({ email: args.email.toLowerCase() });
+  if (existing) {
+    throw new ApiError(409, "An account with this email already exists.");
+  }
+
+  const { hash, salt } = hashPassword(args.password);
+  const now = new Date();
+
+  const result = await collections.users.insertOne({
+    email: args.email.toLowerCase(),
+    passwordHash: hash,
+    passwordSalt: salt,
+    name: args.name,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return { id: result.insertedId, email: args.email.toLowerCase(), name: args.name };
+}
+
+export async function authenticateUser(args: { email: string; password: string }) {
+  await ensureBackendIndexes();
+  const collections = await getCollections();
+
+  const user = await collections.users.findOne({ email: args.email.toLowerCase() });
+  if (!user) {
+    throw new ApiError(401, "Invalid email or password.");
+  }
+
+  const valid = verifyPassword(args.password, user.passwordHash, user.passwordSalt);
+  if (!valid) {
+    throw new ApiError(401, "Invalid email or password.");
+  }
+
+  return createSession(user.email);
 }
