@@ -71,3 +71,13 @@ export interface UserSessionDocument {
   expiresAt: Date;
   createdAt: Date;
 }
+
+export interface UserDocument {
+  _id?: ObjectId;
+  email: string;
+  passwordHash: string;
+  passwordSalt: string;
+  name?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
