@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <OrderProvider>
       <main className="min-h-screen bg-[#09090B] text-white font-sans flex flex-col selection:bg-[#FF8A00] selection:text-black">
-        <Header isLoggedIn={false} />
+        <Header />
         <Toaster position="bottom-right" />
 
       {/* Main Content Layout */}
