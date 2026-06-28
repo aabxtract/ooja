@@ -78,6 +78,7 @@ export interface UserDocument {
   passwordHash: string;
   passwordSalt: string;
   name?: string;
+  walletAddress?: string;
   createdAt: Date;
   updatedAt: Date;
 }
