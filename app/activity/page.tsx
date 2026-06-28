@@ -15,7 +15,7 @@ const activityItems = Array.from({ length: 15 }, (_, i) => ({
 export default function ActivityPage() {
   return (
     <main className="min-h-screen bg-[#09090B] text-white font-sans flex flex-col selection:bg-[#FF8A00] selection:text-black">
-      <Header isLoggedIn={true} />
+      <Header />
       <div className="flex-1 max-w-[1000px] w-full mx-auto p-4 lg:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <h1 className="text-4xl font-black text-white">Global Activity</h1>
