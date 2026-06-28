@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { disconnectWallet } from "@/lib/wallet";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -12,21 +11,17 @@ interface AppShellProps {
 const navItems = [
   { href: "/markets", label: "Markets" },
   { href: "/create", label: "Create" },
-  { href: "/profile", label: "Portfolio" },
+  { href: "/portfolio", label: "Portfolio" },
+  { href: "/activity", label: "Activity" },
 ];
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const [connected, setConnected] = useState(false);
+  const { isLoggedIn, walletAddress, logout } = useAuth();
 
-  const handleDisconnect = async () => {
-    try {
-      await disconnectWallet();
-      setConnected(false);
-    } catch (error) {
-      console.error("Wallet disconnect failed", error);
-    }
-  };
+  const shortAddress = walletAddress
+    ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`
+    : null;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
@@ -65,12 +60,12 @@ export function AppShell({ children }: AppShellProps) {
           </nav>
 
           <div className="flex items-center gap-2">
-            {connected ? (
+            {isLoggedIn ? (
               <button
-                onClick={handleDisconnect}
+                onClick={logout}
                 className="rounded-full border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-bold text-[#312E81] shadow-sm transition hover:border-[#7C3AED] hover:text-[#7C3AED]"
               >
-                SP2C...9QK4
+                {shortAddress}
               </button>
             ) : (
               <Link
@@ -84,15 +79,23 @@ export function AppShell({ children }: AppShellProps) {
         </div>
 
         <nav className="flex gap-2 overflow-x-auto border-t border-[#E2E8F0] bg-white px-4 py-2 md:hidden">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="shrink-0 rounded-full border border-[#E2E8F0] px-3 py-1.5 text-sm font-semibold text-[#64748B]"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+                  active
+                    ? "border-[#312E81] bg-[#312E81] text-white"
+                    : "border-[#E2E8F0] text-[#64748B]"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
       </header>
 
