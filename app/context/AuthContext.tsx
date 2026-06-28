@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { isUserSignedIn } from "@/lib/wallet";
+import { isUserSignedIn, getWalletAddress, disconnectWallet } from "@/lib/wallet";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -22,11 +22,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
 
     const storedToken = localStorage.getItem("ooja_token");
-    const storedAddress = localStorage.getItem("ooja_wallet_address");
     const walletConnected = isUserSignedIn();
+    const address = getWalletAddress() || localStorage.getItem("ooja_wallet_address");
 
     setToken(storedToken);
-    setWalletAddress(storedAddress);
+    setWalletAddress(address);
     setIsLoggedIn(walletConnected || !!storedToken);
   }, []);
 
@@ -38,6 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setWalletAddress(null);
     setIsLoggedIn(false);
+
+    disconnectWallet().catch(() => {});
   }, []);
 
   useEffect(() => {
