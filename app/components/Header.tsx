@@ -1,8 +1,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/app/context/AuthContext";
 
-export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
+export default function Header() {
+  const { isLoggedIn, walletAddress, logout } = useAuth();
+
+  const shortAddress = walletAddress
+    ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`
+    : null;
+
   return (
     <header className="sticky top-0 z-50 flex h-[72px] items-center justify-between border-b border-[#27272A] bg-[#09090B]/80 backdrop-blur-xl px-6 lg:px-8">
       <div className="flex items-center gap-8">
@@ -33,10 +40,13 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
         {isLoggedIn ? (
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-sm font-bold text-white">4,205.50 STX</span>
-              <span className="text-xs text-[#22C55E] font-medium">+$120.00 (2.5%)</span>
+              <span className="text-sm font-bold text-white">{shortAddress}</span>
             </div>
-            <div className="h-10 w-10 rounded-full bg-[#18181B] border border-[#27272A] flex items-center justify-center text-lg cursor-pointer hover:border-[#FF8A00] transition-colors">
+            <div
+              onClick={logout}
+              className="h-10 w-10 rounded-full bg-[#18181B] border border-[#27272A] flex items-center justify-center text-lg cursor-pointer hover:border-[#FF8A00] transition-colors"
+              title="Disconnect"
+            >
               👤
             </div>
           </div>
