@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 export default function PortfolioPage() {
   return (
     <main className="min-h-screen bg-[#09090B] text-white font-sans flex flex-col selection:bg-[#FF8A00] selection:text-black">
-      <Header isLoggedIn={true} />
+      <Header />
       <div className="flex-1 max-w-[1440px] w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
         
         {/* Main Portfolio Content */}

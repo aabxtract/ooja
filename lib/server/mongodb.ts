@@ -4,6 +4,7 @@ import type {
   AuthNonceDocument,
   MarketDocument,
   OrderDocument,
+  UserDocument,
   UserSessionDocument,
 } from "./types";
 
@@ -38,6 +39,7 @@ export async function getCollections() {
   const db = await getDb();
 
   return {
+    users: db.collection<UserDocument>("users"),
     markets: db.collection<MarketDocument>("markets"),
     orders: db.collection<OrderDocument>("orders"),
     activity: db.collection<ActivityDocument>("activity"),
@@ -58,6 +60,7 @@ async function createIndexes() {
   const collections = await getCollections();
 
   await Promise.all([
+    collections.users.createIndex({ email: 1 }, { unique: true }),
     collections.markets.createIndex({ status: 1, closeAt: 1 }),
     collections.markets.createIndex({ category: 1 }),
     collections.orders.createIndex({ walletAddress: 1, createdAt: -1 }),

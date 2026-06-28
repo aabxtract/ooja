@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { connectWallet } from "@/lib/wallet";
+import { connectWallet, getWalletAddress } from "@/lib/wallet";
 
 type Mode = "login" | "signup";
 
@@ -38,6 +38,9 @@ export default function AuthPage() {
         setMode("login");
         setError("");
       } else {
+        if (data.token) {
+          localStorage.setItem("ooja_token", data.token);
+        }
         window.location.href = "/";
       }
     } catch {
@@ -50,6 +53,10 @@ export default function AuthPage() {
   const handleWalletConnect = async () => {
     try {
       await connectWallet();
+      const address = getWalletAddress();
+      if (address) {
+        localStorage.setItem("ooja_wallet_address", address);
+      }
       window.location.href = "/";
     } catch (err) {
       console.error("Wallet connection failed", err);

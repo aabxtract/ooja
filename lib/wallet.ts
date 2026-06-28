@@ -26,10 +26,7 @@ export async function disconnectWallet() {
  */
 export function isUserSignedIn(): boolean {
   if (typeof window === "undefined") return false;
-  
-  // For isConnected, we can try to require it if we are on client.
-  // In modern @stacks/connect, it is often exported in a way that
-  // we can import it.
+
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { isConnected } = require("@stacks/connect");
@@ -40,3 +37,19 @@ export function isUserSignedIn(): boolean {
   }
 }
 
+/**
+ * Gets the current user's Stacks address from the connect session.
+ * Returns null if not connected.
+ */
+export function getWalletAddress(): string | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getUserData } = require("@stacks/connect");
+    const userData = getUserData();
+    return userData?.profile?.stxAddress?.mainnet || null;
+  } catch {
+    return null;
+  }
+}
