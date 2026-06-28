@@ -276,6 +276,7 @@ export async function createUser(args: {
   email: string;
   password: string;
   name?: string;
+  walletAddress?: string;
 }) {
   await ensureBackendIndexes();
   const collections = await getCollections();
@@ -293,6 +294,7 @@ export async function createUser(args: {
     passwordHash: hash,
     passwordSalt: salt,
     name: args.name,
+    walletAddress: args.walletAddress ? normalizeWalletAddress(args.walletAddress) : undefined,
     createdAt: now,
     updatedAt: now,
   });
@@ -314,5 +316,9 @@ export async function authenticateUser(args: { email: string; password: string }
     throw new ApiError(401, "Invalid email or password.");
   }
 
-  return createSession(user.email);
+  if (!user.walletAddress) {
+    throw new ApiError(400, "This account has no linked wallet. Please sign in with your Stacks wallet instead.");
+  }
+
+  return createSession(user.walletAddress);
 }
