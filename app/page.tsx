@@ -1,10 +1,10 @@
 import Header from "./components/Header";
-import Footer from "./components/Footer";
 
 import { Toaster } from "react-hot-toast";
 import { OrderProvider } from "./context/OrderContext";
 import MarketFeed from "./components/MarketFeed";
 import OrderSlip from "./components/OrderSlip";
+import LiveActivity from "./components/LiveActivity";
 
 export default function Home() {
   return (
@@ -65,34 +65,7 @@ export default function Home() {
           
           <OrderSlip />
           
-          {/* Recent Activity Feed */}
-          <div className="bg-[#18181B] border border-[#27272A] rounded-3xl p-6 shadow-xl">
-             <h3 className="text-sm font-black text-[#A1A1AA] mb-5 uppercase tracking-widest">Live Activity</h3>
-             <div className="space-y-4">
-               {[
-                 { user: "SP3F...8K9L", action: "bought Above", amount: "500", market: "STX $2.50", time: "1m ago" },
-                 { user: "SP1A...4M2P", action: "bought Below", amount: "1,200", market: "STX $3.00", time: "3m ago" },
-                 { user: "SP8X...9Y7Z", action: "bought Above", amount: "250", market: "Nakamoto", time: "5m ago" },
-               ].map((act, i) => (
-                 <div key={i} className="flex gap-4 text-sm border-b border-[#27272A] pb-4 last:border-0 last:pb-0">
-                   <div className="h-8 w-8 rounded-full bg-[#09090B] border border-[#27272A] flex items-center justify-center shrink-0 text-base">
-                     👤
-                   </div>
-                   <div className="flex-1">
-                     <p className="text-white font-medium">
-                       <span className="font-bold text-[#FF8A00]">{act.user}</span> {act.action}
-                     </p>
-                     <div className="flex justify-between items-center mt-1">
-                       <p className="text-[#A1A1AA] font-bold text-xs">
-                         {act.amount} STX • {act.market}
-                       </p>
-                       <span className="text-[#71717A] text-xs font-bold">{act.time}</span>
-                     </div>
-                   </div>
-                 </div>
-               ))}
-             </div>
-          </div>
+          <LiveActivity />
         </aside>
 
       </div>
